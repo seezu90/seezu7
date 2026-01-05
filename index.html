@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romantic Birthday Quest ❤️</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;700&display=swap');
+
+        body {
+            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
+            font-family: 'Quicksand', sans-serif; transition: background 0.8s ease; overflow: hidden;
+        }
+
+        #app-container { width: 340px; perspective: 1200px; }
+
+        .card {
+            width: 100%; padding: 25px; box-sizing: border-box; text-align: center;
+            min-height: 420px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2); transition: all 0.5s ease; position: relative;
+        }
+
+        /* 10 Unique Card Styles */
+        .s0 { border-radius: 50px 0; background: #fff; border: 6px solid #ff85a1; }
+        .s1 { border-radius: 0; background: #ffe5ec; border: 10px double #ff4d94; transform: rotate(2deg); }
+        .s2 { border-radius: 30px; background: #fff0f3; border-left: 15px solid #ff85a1; border-right: 15px solid #ff85a1; }
+        .s3 { border-radius: 20px; background: #2b2d42; color: white; border: 2px solid #ef233c; box-shadow: 0 0 20px #ef233c; }
+        .s4 { border-radius: 100px 100px 0 0; background: #fff; border: 4px solid #ff4d94; }
+        .s5 { border-radius: 0 0 100px 100px; background: #fff5f8; border-top: 10px solid #ff85a1; }
+        .s6 { border-radius: 50%; background: #fff; border: 3px dashed #d63384; height: 340px; width: 340px; }
+        .s7 { border-radius: 20px; background: #ffe0e9; transform: skewY(-3deg); border: 2px solid #ff4d94; }
+        .s8 { border-radius: 10px; background: #333; color: #ff85a1; border: 4px solid #ff85a1; }
+        .s9 { border-radius: 40px; background: white; border: 5px solid gold; }
+        .s-final { border-radius: 20px; background: #fdf2f2; border: 2px solid #333; overflow-y: auto; max-height: 500px; }
+
+        .question { font-size: 18px; font-weight: 700; margin-bottom: 20px; min-height: 80px; color: inherit; }
+        
+        .btns button {
+            width: 100%; padding: 12px; margin: 6px 0; border: none;
+            border-radius: 25px; cursor: pointer; font-weight: bold;
+            background: #ff4d94; color: white; transition: 0.3s;
+        }
+
+        button:hover { transform: scale(1.03); filter: brightness(1.1); }
+        .typing::after { content: '|'; animation: blink 0.7s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .sheet-text { text-align: left; font-size: 12px; color: #333; line-height: 1.4; background: #fff; padding: 10px; border-radius: 10px; margin-top: 10px; }
+        .share-btn { background: #25d366 !important; margin-top: 15px !important; }
+        .screenshot-tag { font-size: 14px; font-weight: bold; color: #d63384; background: #ffe0eb; padding: 5px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="card" class="card s0">
+            <div id="question" class="question"></div>
+            <div id="options" class="btns"></div>
+        </div>
+    </div>
+
+    <script>
+        const journey = [
+            { q: "Oye Hotness! 🔥 Aaj kisi bahut special insaan ka birthday hai... pata hai?", a: ["Main hi hoon! 👸", "Nahi pata 😜"], bg: "#ffccd5" },
+            { q: "Uff! Yeh smile.. Iska license liya hai aapne? It's killing me! 🫦", a: ["License ki kya zaroorat?", "Tum mar hi jao! 😂"], bg: "#ffb3c1" },
+            { q: "Ek baat batao, aap mere dil mein bina rent ke kyun rehti ho? 🏠❤️", a: ["Ye mera ghar hai", "Rent mangoge? 😜"], bg: "#ffafcc" },
+            { q: "Aapki aankhen itni nasheeli hain, ki mujhe hosh hi nahi rehta! 😵‍💫", a: ["Sambhal jao 😉", "Sachi? ❤️"], bg: "#2b2d42" },
+            { q: "Agar main aaj aapko 1000 kisses doon, toh aapka reaction? 💋", a: ["Kam hain.. 😉", "Mana kisne kiya?"], bg: "#ff8fa3" },
+            { q: "Aap mere liye woh wish ho jo har baar sach hoti hai.. Maanti ho? ✨", a: ["Haan, maanti hoon", "Zyada makkhan! 😂"], bg: "#ff758f" },
+            { q: "Acha, kya hum hamesha aise hi ladte-jhagadte pyaar karenge? 🤝", a: ["Zaroor! ❤️", "Hamesha ke liye!"], bg: "#ff4d6d" },
+            { q: "Aaj aap itni sundar lag rahi ho ki chand bhi chupta fir raha hai.. 🌙", a: ["Uff! Bas karo 🙈", "Sahi kaha!"], bg: "#c9184a" },
+            { q: "Bas 2 sawal aur.. Kya aap taiyaar ho surprise dekhne ke liye? 🎁", a: ["Ready! 😍", "Jaldi dikhao!"], bg: "#a4133c" },
+            { q: "Aankhen band karo aur apne dil ki dhadkan suno.. Love me? ❤️", a: ["Yes, I Love You!", "Bohot zyada!"], bg: "#ffffff" }
+        ];
+
+        let step = 0;
+        let answers = [];
+
+        function typeWriter(text, i, cb) {
+            const el = document.getElementById('question');
+            if (i < text.length) {
+                el.innerHTML = text.substring(0, i+1) + '<span class="typing"></span>';
+                setTimeout(() => typeWriter(text, i + 1, cb), 40);
+            } else if (cb) cb();
+        }
+
+        function loadStep() {
+            const card = document.getElementById('card');
+            const optCont = document.getElementById('options');
+            document.body.style.background = journey[step].bg;
+            card.className = `card s${step}`;
+            optCont.innerHTML = '';
+            typeWriter(journey[step].q, 0, () => {
+                journey[step].a.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.innerText = ans;
+                    btn.onclick = () => {
+                        answers.push({ q: journey[step].q, a: ans });
+                        step++;
+                        if (step < journey.length) loadStep();
+                        else showBirthdayCard();
+                    };
+                    optCont.appendChild(btn);
+                });
+            });
+        }
+
+        function showBirthdayCard() {
+            const card = document.getElementById('card');
+            card.className = "card s9";
+            card.innerHTML = `
+                <h1 style="font-family:'Dancing Script'; color:#d63384; font-size:32px; margin:0;">Happy Birthday Jaan! 🎂</h1>
+                <p id="final-msg" style="font-weight:bold; color:#555; font-size:14px; margin:10px 0;"></p>
+                <div style="font-size:30px;">💖💋🎁✨</div>
+                <button class="share-btn" onclick="showScreenshotCard()">Share My Answers 📜</button>
+            `;
+            let msg = "Aap meri zindagi ki sabse badi khushi ho. Aapka har sawal ka jawab mere dil mein save hai! ❤️";
+            let i = 0;
+            function type() { if(i < msg.length) { document.getElementById('final-msg').innerHTML += msg.charAt(i); i++; setTimeout(type, 45); } }
+            type();
+        }
+
+        function showScreenshotCard() {
+            const card = document.getElementById('card');
+            document.body.style.background = "#f0f0f0";
+            card.className = "card s-final";
+            
+            let sheetHTML = `<div class="screenshot-tag">📸 Take a Screenshot!</div><div class="sheet-text"><strong>OUR MEMORIES:</strong><br><br>`;
+            answers.forEach((item, index) => {
+                sheetHTML += `<b>${index+1}.</b> ${item.q}<br><span style="color:#d63384">Ans: ${item.a}</span><br><br>`;
+            });
+            sheetHTML += `</div><button class="share-btn" onclick="copySheet()">Copy to Clipboard 📋</button>`;
+            
+            card.innerHTML = sheetHTML;
+        }
+
+        function copySheet() {
+            let text = "--- OUR BIRTHDAY MEMORY SHEET ---\n\n";
+            answers.forEach((item, index) => { text += `${index+1}. ${item.q}\nAns: ${item.a}\n\n`; });
+            text += "I Love You Forever! ❤️";
+            navigator.clipboard.writeText(text).then(() => alert("Sheet Copy Ho Gayi! Ab Screenshot lo ya WhatsApp par bhej do. ❤️"));
+        }
+
+        loadStep();
+    </script>
+</body>
+</html>
